@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 const PORT = 8008;
 
-const getNumbersFromUrl = async (url) => {
+const callURLForNumbers = async (url) => {
   try {
     const response = await axios.get(url);
     if (response.status === 200) {
@@ -14,23 +14,23 @@ const getNumbersFromUrl = async (url) => {
       return data.numbers || [];
     }
   } catch (error) {
-    console.error(`Error fetching numbers from ${url}:`, error.message);
+    console.error(`Getting Error while fetching the numbers from ${url}:`, error.message);
   }
   return [];
 };
 
-const mergeUniqueNumbers = async (urls) => {
+const generateFinalResponse = async (urls) => {
   const uniqueNumbers = new Set();
 
   try {
-    const fetchPromises = urls.map(getNumbersFromUrl);
+    const fetchPromises = urls.map(callURLForNumbers);
     const numbersArrays = await Promise.all(fetchPromises);
 
     numbersArrays.forEach((numbers) => {
       numbers.forEach((number) => uniqueNumbers.add(number));
     });
   } catch (error) {
-    console.error("Error merging numbers:", error.message);
+    console.error("Error while merging the numbers:", error.message);
   }
 
   return Array.from(uniqueNumbers).sort((a, b) => a - b);
@@ -39,10 +39,10 @@ const mergeUniqueNumbers = async (urls) => {
 app.get("/numbers", async (req, res) => {
   const urls = req.query.url;
   if (!urls || !Array.isArray(urls) || urls.length === 0) {
-    return res.status(400).json({ error: "Invalid or empty 'url' parameter." });
+    return res.status(400).json({ error: "Invalid or empty 'url' parameter. please check and Try Again." });
   }
 
-  const mergedNumbers = await mergeUniqueNumbers(urls);
+  const mergedNumbers = await generateFinalResponse(urls);
   return res.json({ numbers: mergedNumbers });
 });
 
